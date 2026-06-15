@@ -1,0 +1,24 @@
+{{ 'geoflow-redirect.css' | asset_url | stylesheet_tag }}
+
+<script>
+  window.GeoFlowRedirect = window.GeoFlowRedirect || {};
+  window.GeoFlowRedirect.settingsUrl =
+    "{{ block.settings.app_url | strip | escape }}/api/public-settings?shop={{ shop.permanent_domain | url_encode }}";
+</script>
+<script src="{{ 'geoflow-redirect.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "GeoFlow Redirect",
+  "target": "body",
+  "settings": [
+    {
+      "type": "text",
+      "id": "app_url",
+      "label": "App URL",
+      "default": "https://localhost:3000",
+      "info": "Use the HTTPS app URL shown by Shopify CLI during development or your production app URL. Do not use example.com."
+    }
+  ]
+}
+{% endschema %}

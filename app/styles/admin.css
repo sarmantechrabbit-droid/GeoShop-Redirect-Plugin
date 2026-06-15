@@ -1,0 +1,240 @@
+.geoflow-admin-links {
+  display: none;
+}
+
+.geoflow-login {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: #f6f6f7;
+}
+
+.geoflow-login-card {
+  width: min(100%, 420px);
+  border: 1px solid #dcdfe4;
+  border-radius: 12px;
+  padding: 24px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.geoflow-login-card h1 {
+  margin: 0 0 8px;
+  color: #202223;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.geoflow-login-card p {
+  margin: 0;
+  color: #616161;
+  line-height: 1.5;
+}
+
+.geoflow-login-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.geoflow-login-form label {
+  color: #202223;
+  font-weight: 650;
+}
+
+.geoflow-login-form input {
+  width: 100%;
+  border: 1px solid #8a8a8a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.geoflow-login-form input:focus {
+  border-color: #005bd3;
+  outline: 2px solid rgba(0, 91, 211, 0.22);
+}
+
+.geoflow-login-form button {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 14px;
+  background: #202223;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.geoflow-login-error {
+  color: #bf0711;
+  font-size: 13px;
+}
+
+.geoflow-preview-shell {
+  min-height: 620px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 24rem),
+    linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+}
+
+.geoflow-preview-store {
+  padding: 28px;
+}
+
+.geoflow-preview-bar {
+  height: 64px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.geoflow-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.geoflow-preview-card {
+  min-height: 160px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.geoflow-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(2, 6, 23, 0.68);
+}
+
+.geoflow-preview-modal {
+  width: min(100%, 480px);
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 28px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.26);
+}
+
+.geoflow-preview-close {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: #64748b;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.geoflow-preview-kicker {
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.geoflow-preview-title {
+  margin: 8px 0 14px;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.geoflow-preview-message {
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.geoflow-preview-options {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.geoflow-preview-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.geoflow-preview-flag {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 32px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.geoflow-preview-flag-in {
+  background: linear-gradient(
+    to bottom,
+    #ff9933 0 33.33%,
+    #ffffff 33.33% 66.66%,
+    #138808 66.66% 100%
+  );
+}
+
+.geoflow-preview-flag-in::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #000080;
+  border-radius: 999px;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.geoflow-preview-flag-ae {
+  background:
+    linear-gradient(to right, #ff0000 0 26%, transparent 26% 100%),
+    linear-gradient(
+      to bottom,
+      #009739 0 33.33%,
+      #ffffff 33.33% 66.66%,
+      #000000 66.66% 100%
+    );
+}
+
+.geoflow-preview-country {
+  color: #111827;
+  font-weight: 800;
+}
+
+.geoflow-preview-button {
+  width: 100%;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .geoflow-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .geoflow-preview-modal {
+    padding: 22px;
+  }
+}

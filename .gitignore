@@ -1,0 +1,7 @@
+node_modules
+build
+.react-router
+.shopify
+.env
+.DS_Store
+app/data/*.json

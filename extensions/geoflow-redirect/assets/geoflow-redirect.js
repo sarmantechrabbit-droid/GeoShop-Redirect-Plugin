@@ -1,0 +1,419 @@
+(function () {
+  var STORAGE_KEY = "geoflow_redirect_selected_country";
+  var ROOT_ID = "geoflow-redirect-root";
+  var FLOATING_ID = "geoflow-redirect-change-country";
+  var IP_API_URL = "https://ipapi.co/json/";
+
+  // Detect Shopify Theme Editor mode
+  var isThemeEditor = !!(window.Shopify && window.Shopify.designMode);
+
+  var DEFAULT_SETTINGS = {
+    popupEnabled: true,
+    indiaUrl: "https://india.example.com/",
+    uaeUrl: "https://uae.example.com/",
+    indiaMessage:
+      "We detected that you are visiting from India. Please shop from our Indian website.",
+    uaeMessage:
+      "We detected that you are visiting from UAE. Please shop from our UAE website.",
+    otherCountryMessage: "Choose your shopping region.",
+    indiaButtonText: "Shop India",
+    uaeButtonText: "Shop UAE",
+    shopNowButtonText: "Shop Now",
+    rememberSelection: true,
+  };
+
+  var COUNTRIES = {
+    IN: {
+      code: "IN",
+      label: "India",
+      flagClass: "gfr-flag--in",
+      urlKey: "indiaUrl",
+      messageKey: "indiaMessage",
+      buttonKey: "indiaButtonText",
+    },
+    AE: {
+      code: "AE",
+      label: "UAE",
+      flagClass: "gfr-flag--ae",
+      urlKey: "uaeUrl",
+      messageKey: "uaeMessage",
+      buttonKey: "uaeButtonText",
+    },
+  };
+
+  var settings = DEFAULT_SETTINGS;
+  var selectedManualCountry = "IN";
+
+  console.log("[GeoFlow] Redirect loaded");
+  console.log("[GeoFlow] Theme editor mode:", isThemeEditor);
+
+  function mergeSettings(remoteSettings) {
+    settings = Object.assign({}, DEFAULT_SETTINGS, remoteSettings || {});
+  }
+
+  function getSettingsUrl() {
+    var config = window.GeoFlowRedirect || {};
+    return config.settingsUrl;
+  }
+
+  function getSavedCountry() {
+    try {
+      return window.localStorage.getItem(STORAGE_KEY);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveCountry(countryCode) {
+    if (!settings.rememberSelection) {
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, countryCode);
+    } catch (error) {
+      return;
+    }
+  }
+
+  function clearSavedCountry() {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      return;
+    }
+  }
+
+  // Safe redirect helper — blocks redirects inside Theme Editor iframe
+  function redirectTo(url) {
+    if (!url) return;
+
+    console.log("[GeoFlow] Redirect URL:", url);
+
+    if (isThemeEditor) {
+      console.log("[GeoFlow] Redirect blocked in theme editor:", url);
+      alert(
+        "Preview mode: Redirect is disabled inside Shopify Theme Editor.\n\nTarget URL: " +
+          url +
+          "\n\nOpen the storefront directly to test redirect.",
+      );
+      return;
+    }
+
+    window.top.location.href = url;
+  }
+
+  function removePopup() {
+    var existingRoot = document.getElementById(ROOT_ID);
+    if (existingRoot) {
+      existingRoot.remove();
+    }
+    document.removeEventListener("keydown", handleEscape);
+  }
+
+  function handleEscape(event) {
+    if (event.key === "Escape") {
+      removePopup();
+    }
+  }
+
+  function redirectToCountry(countryCode) {
+    var country = COUNTRIES[countryCode];
+    if (!country) {
+      return;
+    }
+
+    saveCountry(countryCode);
+    redirectTo(settings[country.urlKey]);
+  }
+
+  function createButton(label, className) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = className;
+    button.textContent = label;
+    return button;
+  }
+
+  function createFlag(country, sizeClass) {
+    var flag = document.createElement("span");
+    flag.className = sizeClass + " " + country.flagClass;
+    flag.setAttribute("aria-label", country.label + " flag");
+    flag.setAttribute("role", "img");
+    return flag;
+  }
+
+  function createDetectedContent(countryCode) {
+    var country = COUNTRIES[countryCode];
+    var wrapper = document.createElement("div");
+    wrapper.className = "gfr-detected";
+
+    var flag = createFlag(country, "gfr-flag-large");
+
+    var message = document.createElement("p");
+    message.className = "gfr-message";
+    message.textContent = settings[country.messageKey];
+
+    var button = createButton(settings[country.buttonKey], "gfr-button");
+    button.addEventListener("click", function () {
+      redirectToCountry(country.code);
+    });
+
+    wrapper.appendChild(flag);
+    wrapper.appendChild(message);
+    wrapper.appendChild(button);
+
+    return wrapper;
+  }
+
+  function createOption(countryCode) {
+    var country = COUNTRIES[countryCode];
+    var option = createButton("", "gfr-option");
+    if (selectedManualCountry === countryCode) {
+      option.classList.add("is-selected");
+    }
+
+    var content = document.createElement("span");
+    content.className = "gfr-option-content";
+
+    var flag = createFlag(country, "gfr-flag");
+
+    var copy = document.createElement("span");
+    var label = document.createElement("span");
+    label.className = "gfr-country";
+    label.textContent = country.label;
+
+    var url = document.createElement("span");
+    url.className = "gfr-url";
+    url.textContent = settings[country.urlKey];
+
+    var check = document.createElement("span");
+    check.className = "gfr-check";
+
+    copy.appendChild(label);
+    copy.appendChild(url);
+    content.appendChild(flag);
+    content.appendChild(copy);
+    option.appendChild(content);
+    option.appendChild(check);
+
+    option.addEventListener("click", function () {
+      selectedManualCountry = countryCode;
+      renderPopup("OTHER");
+    });
+
+    return option;
+  }
+
+  function createManualContent() {
+    var wrapper = document.createElement("div");
+    var message = document.createElement("p");
+    message.className = "gfr-message";
+    message.textContent =
+      "Select the storefront that best matches your shopping region.";
+
+    var options = document.createElement("div");
+    options.className = "gfr-options";
+    options.appendChild(createOption("IN"));
+    options.appendChild(createOption("AE"));
+
+    var button = createButton(settings.shopNowButtonText, "gfr-button");
+    button.addEventListener("click", function () {
+      redirectToCountry(selectedManualCountry);
+    });
+
+    wrapper.appendChild(message);
+    wrapper.appendChild(options);
+    wrapper.appendChild(button);
+
+    return wrapper;
+  }
+
+  function renderPopup(countryCode) {
+    removePopup();
+
+    var root = document.createElement("div");
+    root.id = ROOT_ID;
+
+    var overlay = document.createElement("div");
+    overlay.className = "gfr-overlay";
+    overlay.setAttribute("role", "presentation");
+
+    var modal = document.createElement("section");
+    modal.className = "gfr-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "gfr-title");
+
+    var closeButton = createButton("x", "gfr-close");
+    closeButton.setAttribute("aria-label", "Close country popup");
+    closeButton.addEventListener("click", removePopup);
+
+    var kicker = document.createElement("p");
+    kicker.className = "gfr-kicker";
+    kicker.textContent = "GeoFlow Redirect";
+
+    var title = document.createElement("h2");
+    title.id = "gfr-title";
+    title.className = "gfr-title";
+    title.textContent =
+      countryCode === "IN" || countryCode === "AE"
+        ? "Shop your regional store"
+        : settings.otherCountryMessage;
+
+    modal.appendChild(closeButton);
+    modal.appendChild(kicker);
+    modal.appendChild(title);
+    modal.appendChild(
+      countryCode === "IN" || countryCode === "AE"
+        ? createDetectedContent(countryCode)
+        : createManualContent(),
+    );
+
+    overlay.addEventListener("mousedown", function (event) {
+      if (event.target === overlay) {
+        removePopup();
+      }
+    });
+
+    overlay.appendChild(modal);
+    root.appendChild(overlay);
+    document.body.appendChild(root);
+    document.addEventListener("keydown", handleEscape);
+  }
+
+  function renderFloatingButton() {
+    if (document.getElementById(FLOATING_ID)) {
+      return;
+    }
+
+    var button = createButton("Change Country", "gfr-floating");
+    button.id = FLOATING_ID;
+    button.addEventListener("click", function () {
+      clearSavedCountry();
+      selectedManualCountry = "IN";
+      startPopupFlow(true);
+    });
+
+    document.body.appendChild(button);
+  }
+
+  function detectCountry() {
+    // Skip IP detection in Theme Editor to avoid unnecessary API calls
+    if (isThemeEditor) {
+      console.log(
+        "[GeoFlow] Skipping IP detection in theme editor, showing manual picker",
+      );
+      return Promise.resolve("OTHER");
+    }
+
+    return fetch(IP_API_URL, { headers: { Accept: "application/json" } })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Country detection failed.");
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        var countryCode = String(data.country_code || "").toUpperCase();
+        console.log("[GeoFlow] Detected country:", countryCode);
+        return countryCode === "IN" || countryCode === "AE"
+          ? countryCode
+          : "OTHER";
+      })
+      .catch(function () {
+        return "OTHER";
+      });
+  }
+
+  function startPopupFlow(forceOpen) {
+    if (!settings.popupEnabled) {
+      console.log("[GeoFlow] Popup is disabled in settings");
+      return;
+    }
+
+    renderFloatingButton();
+
+    // In Theme Editor, always show the popup for preview purposes
+    if (isThemeEditor) {
+      console.log("[GeoFlow] Theme editor: always showing popup for preview");
+      detectCountry().then(function (countryCode) {
+        renderPopup(countryCode);
+      });
+      return;
+    }
+
+    if (!forceOpen && settings.rememberSelection && getSavedCountry()) {
+      return;
+    }
+
+    detectCountry().then(function (countryCode) {
+      renderPopup(countryCode);
+    });
+  }
+
+  function loadSettings() {
+    var settingsUrl = getSettingsUrl();
+
+    if (!settingsUrl) {
+      console.warn(
+        "[GeoFlow] No settings URL found. Make sure the app embed is enabled.",
+      );
+      mergeSettings(null);
+      startPopupFlow(false);
+      return;
+    }
+
+    if (
+      settingsUrl.indexOf("https://example.com") === 0 ||
+      settingsUrl.indexOf("https://localhost") === 0 ||
+      settingsUrl.indexOf("http://localhost") === 0
+    ) {
+      console.warn(
+        "[GeoFlow] App URL is still set to a placeholder (" +
+          settingsUrl.split("/api")[0] +
+          '). Please update the App URL in Theme Editor > App Embeds > GeoFlow Redirect to your actual app URL (the Cloudflare tunnel URL from "npm run dev").',
+      );
+      mergeSettings(null);
+      startPopupFlow(false);
+      return;
+    }
+
+    console.log("[GeoFlow] Fetching settings from:", settingsUrl);
+
+    fetch(settingsUrl, { headers: { Accept: "application/json" } })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error(
+            "Settings request failed with status " + response.status,
+          );
+        }
+        return response.json();
+      })
+      .then(function (payload) {
+        console.log(
+          "[GeoFlow] Settings loaded successfully:",
+          payload.settings,
+        );
+        mergeSettings(payload.settings);
+        startPopupFlow(false);
+      })
+      .catch(function (err) {
+        console.error(
+          "[GeoFlow] Failed to load settings from: " + settingsUrl,
+          err.message || err,
+        );
+        console.warn(
+          "[GeoFlow] Using default settings as fallback. The popup URLs may be incorrect.",
+        );
+        mergeSettings(null);
+        startPopupFlow(false);
+      });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadSettings);
+  } else {
+    loadSettings();
+  }
+})();
