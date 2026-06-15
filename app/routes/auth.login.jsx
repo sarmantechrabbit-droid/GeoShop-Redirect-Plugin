@@ -1,4 +1,4 @@
-import { Form, redirect, useActionData } from 'react-router'
+import { redirect, useActionData } from 'react-router'
 import { getDevelopmentShop, loginTopLevel } from '../services/shopifyAuth.server.js'
 
 export const loader = async ({ request }) => {
@@ -23,7 +23,7 @@ export default function Login() {
       <section className="geoflow-login-card">
         <h1>Login to GeoFlow Redirect</h1>
         <p>Enter your Shopify store domain to continue installing the app.</p>
-        <Form method="post" className="geoflow-login-form">
+        <form method="post" className="geoflow-login-form">
           <label htmlFor="shop">Shop domain</label>
           <input
             id="shop"
@@ -37,7 +37,7 @@ export default function Login() {
             <p className="geoflow-login-error">Enter a valid Shopify store domain.</p>
           ) : null}
           <button type="submit">Continue</button>
-        </Form>
+        </form>
       </section>
     </main>
   )
