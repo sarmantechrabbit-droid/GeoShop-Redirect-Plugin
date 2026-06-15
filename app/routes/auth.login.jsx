@@ -1,6 +1,5 @@
 import { Form, redirect, useActionData } from 'react-router'
-import { login } from '../shopify.server.js'
-import { getDevelopmentShop } from '../services/shopifyAuth.server.js'
+import { getDevelopmentShop, loginTopLevel } from '../services/shopifyAuth.server.js'
 
 export const loader = async ({ request }) => {
   const url = new URL(request.url)
@@ -9,11 +8,11 @@ export const loader = async ({ request }) => {
     throw redirect('/app')
   }
 
-  return login(request)
+  return loginTopLevel(request)
 }
 
 export const action = async ({ request }) => {
-  return login(request)
+  return loginTopLevel(request)
 }
 
 export default function Login() {

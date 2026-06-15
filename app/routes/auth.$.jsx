@@ -1,6 +1,6 @@
-import { authenticate } from '../shopify.server.js'
+import { authenticateAdmin } from '../services/shopifyAuth.server.js'
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request)
+  await authenticateAdmin(request)
   return null
 }

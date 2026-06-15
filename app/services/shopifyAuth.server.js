@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { addDocumentResponseHeaders, authenticate } from '../shopify.server.js'
+import { addDocumentResponseHeaders, authenticate, login } from '../shopify.server.js'
 
 const APP_BRIDGE_URL = 'https://cdn.shopify.com/shopifycloud/app-bridge.js'
 
@@ -93,6 +93,22 @@ export async function authenticateAdmin(request) {
         session: {
           shop: developmentShop,
         },
+      }
+    }
+
+    throw error
+  }
+}
+
+export async function loginTopLevel(request) {
+  try {
+    return await login(request)
+  } catch (error) {
+    if (error instanceof Response) {
+      const location = error.headers.get('Location')
+
+      if (isShopifyAuthRedirect(location)) {
+        throwTopLevelRedirect(request, location)
       }
     }
 
