@@ -9,7 +9,7 @@ import {
   Page,
   Text,
 } from '@shopify/polaris'
-import { useLoaderData } from 'react-router'
+import { useLoaderData, useNavigate } from 'react-router'
 import { authenticateAdmin } from '../services/shopifyAuth.server.js'
 import { getSettingsForShop } from '../services/settings.server.js'
 
@@ -22,6 +22,7 @@ export const loader = async ({ request }) => {
 
 export default function Dashboard() {
   const { shop, settings } = useLoaderData()
+  const navigate = useNavigate()
 
   return (
     <Page title="GeoFlow Redirect">
@@ -67,10 +68,10 @@ export default function Dashboard() {
               </InlineGrid>
 
               <InlineStack gap="300">
-                <Button url="/app/settings" variant="primary">
+                <Button onClick={() => navigate('/app/settings')} variant="primary">
                   Manage settings
                 </Button>
-                <Button url="/app/preview">
+                <Button onClick={() => navigate('/app/preview')}>
                   Preview popup
                 </Button>
               </InlineStack>
