@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
-    "@react-router/dev": "^7.1.1",
+    "@react-router/dev": "^7.17.0",
     "@shopify/cli": "3.94.3",
     "eslint": "^9.17.0",
     "eslint-plugin-react": "^7.37.2",
