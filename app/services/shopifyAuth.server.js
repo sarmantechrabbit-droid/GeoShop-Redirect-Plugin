@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { redirect } from 'react-router'
 import { addDocumentResponseHeaders, authenticate, login } from '../shopify.server.js'
 
 const APP_BRIDGE_URL = 'https://cdn.shopify.com/shopifycloud/app-bridge.js'
@@ -108,7 +109,7 @@ export async function loginTopLevel(request) {
       const location = error.headers.get('Location')
 
       if (isShopifyAuthRedirect(location)) {
-        throwTopLevelRedirect(request, location)
+        return redirect(location)
       }
     }
 
