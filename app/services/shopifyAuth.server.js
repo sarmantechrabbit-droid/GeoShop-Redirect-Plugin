@@ -1,6 +1,53 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { authenticate } from '../shopify.server.js'
+import { addDocumentResponseHeaders, authenticate } from '../shopify.server.js'
+
+const APP_BRIDGE_URL = 'https://cdn.shopify.com/shopifycloud/app-bridge.js'
+
+function isShopifyAuthRedirect(url) {
+  if (!url) {
+    return false
+  }
+
+  try {
+    const { hostname } = new URL(url)
+
+    return (
+      hostname === 'accounts.shopify.com' ||
+      hostname === 'admin.shopify.com' ||
+      hostname.endsWith('.myshopify.com')
+    )
+  } catch {
+    return false
+  }
+}
+
+function throwTopLevelRedirect(request, location) {
+  const headers = new Headers({
+    'Content-Type': 'text/html;charset=utf-8',
+  })
+
+  addDocumentResponseHeaders(request, headers)
+
+  throw new Response(
+    `
+      <!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <script data-api-key="${process.env.SHOPIFY_API_KEY || ''}" src="${APP_BRIDGE_URL}"></script>
+          <script>
+            window.open(${JSON.stringify(location)}, "_top");
+          </script>
+        </head>
+        <body>
+          Redirecting to Shopify...
+        </body>
+      </html>
+    `,
+    { headers },
+  )
+}
 
 export function getDevelopmentShop() {
   if (process.env.SHOPIFY_DEV_STORE_URL) {
@@ -31,6 +78,14 @@ export async function authenticateAdmin(request) {
   try {
     return await authenticate.admin(request)
   } catch (error) {
+    if (error instanceof Response) {
+      const location = error.headers.get('Location')
+
+      if (isShopifyAuthRedirect(location)) {
+        throwTopLevelRedirect(request, location)
+      }
+    }
+
     const developmentShop = getDevelopmentShop()
 
     if (process.env.NODE_ENV !== 'production' && developmentShop) {
