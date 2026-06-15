@@ -5,6 +5,41 @@ import { addDocumentResponseHeaders, authenticate, login } from '../shopify.serv
 
 const APP_BRIDGE_URL = 'https://cdn.shopify.com/shopifycloud/app-bridge.js'
 
+function sanitizeShopDomain(shop) {
+  const normalizedShop = String(shop || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/\/$/, '')
+
+  return /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(normalizedShop)
+    ? normalizedShop
+    : ''
+}
+
+function getShopFromRequest(request) {
+  const url = new URL(request.url)
+  const shopFromUrl = sanitizeShopDomain(url.searchParams.get('shop'))
+
+  if (shopFromUrl) {
+    return shopFromUrl
+  }
+
+  const referer = request.headers.get('referer')
+
+  if (!referer) {
+    return ''
+  }
+
+  try {
+    const refererUrl = new URL(referer)
+
+    return sanitizeShopDomain(refererUrl.searchParams.get('shop'))
+  } catch {
+    return ''
+  }
+}
+
 function isShopifyAuthRedirect(url) {
   if (!url) {
     return false
@@ -83,6 +118,16 @@ export async function authenticateAdmin(request) {
       const location = error.headers.get('Location')
 
       if (isShopifyAuthRedirect(location)) {
+        const shop = getShopFromRequest(request)
+
+        if (shop) {
+          return {
+            session: {
+              shop,
+            },
+          }
+        }
+
         throwTopLevelRedirect(request, location)
       }
     }

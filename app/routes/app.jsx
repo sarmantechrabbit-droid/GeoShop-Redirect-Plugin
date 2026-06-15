@@ -10,13 +10,15 @@ import { NavLink, Outlet, useLoaderData, useLocation } from "react-router";
 import { authenticateAdmin } from "../services/shopifyAuth.server.js";
 
 export const loader = async ({ request }) => {
-  await authenticateAdmin(request);
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  const { session } = await authenticateAdmin(request);
+
+  return { apiKey: process.env.SHOPIFY_API_KEY || "", shop: session.shop };
 };
 
 export default function AppLayout() {
-  const { apiKey } = useLoaderData();
+  const { apiKey, shop } = useLoaderData();
   const location = useLocation();
+  const shopSearch = shop ? `?shop=${encodeURIComponent(shop)}` : "";
 
   const navigationItems = [
     { label: "Dashboard", url: "/app", icon: HomeIcon },
@@ -34,7 +36,7 @@ export default function AppLayout() {
                 items={navigationItems.map((item) => ({
                   ...item,
                   selected: location.pathname === item.url,
-                  url: item.url,
+                  url: `${item.url}${shopSearch}`,
                 }))}
               />
             </Navigation>
@@ -43,7 +45,7 @@ export default function AppLayout() {
           <Page>
             <div className="geoflow-admin-links">
               {navigationItems.map((item) => (
-                <NavLink key={item.url} to={item.url}>
+                <NavLink key={item.url} to={`${item.url}${shopSearch}`}>
                   {item.label}
                 </NavLink>
               ))}

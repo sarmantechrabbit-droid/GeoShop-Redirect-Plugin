@@ -23,6 +23,7 @@ export const loader = async ({ request }) => {
 export default function Dashboard() {
   const { shop, settings } = useLoaderData()
   const navigate = useNavigate()
+  const shopSearch = shop ? `?shop=${encodeURIComponent(shop)}` : ''
 
   return (
     <Page title="GeoFlow Redirect">
@@ -68,10 +69,13 @@ export default function Dashboard() {
               </InlineGrid>
 
               <InlineStack gap="300">
-                <Button onClick={() => navigate('/app/settings')} variant="primary">
+                <Button
+                  onClick={() => navigate(`/app/settings${shopSearch}`)}
+                  variant="primary"
+                >
                   Manage settings
                 </Button>
-                <Button onClick={() => navigate('/app/preview')}>
+                <Button onClick={() => navigate(`/app/preview${shopSearch}`)}>
                   Preview popup
                 </Button>
               </InlineStack>

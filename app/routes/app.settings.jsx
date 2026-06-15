@@ -12,7 +12,12 @@ import {
   TextField,
 } from '@shopify/polaris'
 import { useEffect, useState } from 'react'
-import { Form as RouterForm, useActionData, useLoaderData, useNavigation } from 'react-router'
+import {
+  Form as RouterForm,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from 'react-router'
 import { authenticateAdmin } from '../services/shopifyAuth.server.js'
 import {
   getSettingsForShop,
@@ -25,7 +30,7 @@ export const loader = async ({ request }) => {
   const { session } = await authenticateAdmin(request)
   const settings = await getSettingsForShop(session.shop)
 
-  return { settings }
+  return { settings, shop: session.shop }
 }
 
 export const action = async ({ request }) => {
@@ -50,6 +55,9 @@ export default function Settings() {
   const actionData = useActionData()
   const navigation = useNavigation()
   const settings = actionData?.settings || loaderData.settings
+  const shopSearch = loaderData.shop
+    ? `?shop=${encodeURIComponent(loaderData.shop)}`
+    : ''
   const [formState, setFormState] = useState(settings)
   const isSubmitting = navigation.state === 'submitting'
 
@@ -80,7 +88,7 @@ export default function Settings() {
       title="Settings"
       subtitle="Configure the country redirect popup for your storefront app embed."
     >
-      <RouterForm method="post">
+      <RouterForm method="post" action={`/app/settings${shopSearch}`}>
         <Layout>
           <Layout.Section>
             <BlockStack gap="400">
