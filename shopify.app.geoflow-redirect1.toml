@@ -3,7 +3,7 @@
 client_id = "2f456b7574090f6ab579a706f9b95ff3"
 web_directories = ["web"]
 name = "GeoFlow Redirect1"
-application_url = "https://general-ads-fred-presentation.trycloudflare.com"
+application_url = "https://geoshop-redirect-plugin.onrender.com"
 embedded = true
 
 [webhooks]
@@ -15,9 +15,9 @@ scopes = "read_themes,write_themes"
 
 [auth]
 redirect_urls = [
-  "https://localhost:3000/auth/callback",
-  "https://localhost:3000/auth/shopify/callback",
-  "https://localhost:3000/api/auth/callback"
+ "https://geoshop-redirect-plugin.onrender.com/auth/callback",
+  "https://geoshop-redirect-plugin.onrender.com/auth/shopify/callback",
+  "https://geoshop-redirect-plugin.onrender.com/api/auth/callback"
 ]
 
 [build]
