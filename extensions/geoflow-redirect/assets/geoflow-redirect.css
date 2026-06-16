@@ -88,8 +88,7 @@
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
-.gfr-option:hover,
-.gfr-option.is-selected {
+.gfr-option:hover {
   border-color: var(--gfr-accent);
   background: #eff6ff;
   box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
@@ -162,57 +161,6 @@
   white-space: nowrap;
 }
 
-.gfr-check {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #cbd5e1;
-  border-radius: 999px;
-}
-
-.gfr-option.is-selected .gfr-check {
-  border-color: var(--gfr-accent);
-  background: radial-gradient(circle, var(--gfr-accent) 42%, transparent 46%);
-}
-
-.gfr-button {
-  width: 100%;
-  border: 0;
-  border-radius: 14px;
-  background: var(--gfr-accent);
-  color: #ffffff;
-  padding: 15px 18px;
-  font-size: 16px;
-  font-weight: 900;
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.24);
-  transition: background 160ms ease, transform 160ms ease;
-}
-
-.gfr-button:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
-.gfr-floating {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 2147482999;
-  border: 0;
-  border-radius: 999px;
-  background: var(--gfr-primary);
-  color: #ffffff;
-  padding: 13px 18px;
-  font-size: 14px;
-  font-weight: 850;
-  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.25);
-  transition: background 160ms ease, transform 160ms ease;
-}
-
-.gfr-floating:hover {
-  background: var(--gfr-accent);
-  transform: translateY(-1px);
-}
-
 @keyframes gfr-fade-in {
   from {
     opacity: 0;
@@ -254,8 +202,4 @@
     max-width: 180px;
   }
 
-  .gfr-floating {
-    right: 12px;
-    bottom: 12px;
-  }
 }

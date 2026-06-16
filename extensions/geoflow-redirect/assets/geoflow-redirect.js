@@ -1,7 +1,5 @@
 (function () {
-  var STORAGE_KEY = "geoflow_redirect_selected_country";
   var ROOT_ID = "geoflow-redirect-root";
-  var FLOATING_ID = "geoflow-redirect-change-country";
   var IP_API_URL = "https://ipapi.co/json/";
 
   // Detect Shopify Theme Editor mode
@@ -42,7 +40,6 @@
   };
 
   var settings = DEFAULT_SETTINGS;
-  var selectedManualCountry = "IN";
 
   console.log("[GeoFlow] Redirect loaded");
   console.log("[GeoFlow] Theme editor mode:", isThemeEditor);
@@ -56,29 +53,13 @@
     return config.settingsUrl;
   }
 
-  function getSavedCountry() {
-    try {
-      return window.localStorage.getItem(STORAGE_KEY);
-    } catch (error) {
-      return null;
-    }
-  }
-
   function saveCountry(countryCode) {
     if (!settings.rememberSelection) {
       return;
     }
 
     try {
-      window.localStorage.setItem(STORAGE_KEY, countryCode);
-    } catch (error) {
-      return;
-    }
-  }
-
-  function clearSavedCountry() {
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.setItem("geoflow_redirect_selected_country", countryCode);
     } catch (error) {
       return;
     }
@@ -144,9 +125,6 @@
   function createOption(countryCode) {
     var country = COUNTRIES[countryCode];
     var option = createButton("", "gfr-option");
-    if (selectedManualCountry === countryCode) {
-      option.classList.add("is-selected");
-    }
 
     var content = document.createElement("span");
     content.className = "gfr-option-content";
@@ -162,19 +140,14 @@
     url.className = "gfr-url";
     url.textContent = settings[country.urlKey];
 
-    var check = document.createElement("span");
-    check.className = "gfr-check";
-
     copy.appendChild(label);
     copy.appendChild(url);
     content.appendChild(flag);
     content.appendChild(copy);
     option.appendChild(content);
-    option.appendChild(check);
 
     option.addEventListener("click", function () {
-      selectedManualCountry = countryCode;
-      renderPopup("OTHER");
+      redirectToCountry(countryCode);
     });
 
     return option;
@@ -192,14 +165,8 @@
     options.appendChild(createOption("IN"));
     options.appendChild(createOption("AE"));
 
-    var button = createButton(settings.shopNowButtonText, "gfr-button");
-    button.addEventListener("click", function () {
-      redirectToCountry(selectedManualCountry);
-    });
-
     wrapper.appendChild(message);
     wrapper.appendChild(options);
-    wrapper.appendChild(button);
 
     return wrapper;
   }
@@ -238,22 +205,6 @@
     document.body.appendChild(root);
   }
 
-  function renderFloatingButton() {
-    if (document.getElementById(FLOATING_ID)) {
-      return;
-    }
-
-    var button = createButton("Change Country", "gfr-floating");
-    button.id = FLOATING_ID;
-    button.addEventListener("click", function () {
-      clearSavedCountry();
-      selectedManualCountry = "IN";
-      startPopupFlow(true);
-    });
-
-    document.body.appendChild(button);
-  }
-
   function detectCountry() {
     // Skip IP detection in Theme Editor to avoid unnecessary API calls
     if (isThemeEditor) {
@@ -282,28 +233,17 @@
       });
   }
 
-  function startPopupFlow(forceOpen) {
+  function startPopupFlow() {
     if (!settings.popupEnabled) {
       console.log("[GeoFlow] Popup is disabled in settings");
       return;
     }
-
-    renderFloatingButton();
 
     // In Theme Editor, always show the popup for preview purposes
     if (isThemeEditor) {
       console.log("[GeoFlow] Theme editor: always showing popup for preview");
       renderPopup("OTHER");
       return;
-    }
-
-    if (!forceOpen && settings.rememberSelection) {
-      var savedCountry = getSavedCountry();
-
-      if (COUNTRIES[savedCountry]) {
-        redirectToCountry(savedCountry);
-        return;
-      }
     }
 
     detectCountry().then(function (countryCode) {
@@ -324,7 +264,7 @@
         "[GeoFlow] No settings URL found. Make sure the app embed is enabled.",
       );
       mergeSettings(null);
-      startPopupFlow(false);
+      startPopupFlow();
       return;
     }
 
@@ -339,7 +279,7 @@
           '). Please update the App URL in Theme Editor > App Embeds > GeoFlow Redirect to your actual app URL (the Cloudflare tunnel URL from "npm run dev").',
       );
       mergeSettings(null);
-      startPopupFlow(false);
+      startPopupFlow();
       return;
     }
 
@@ -360,7 +300,7 @@
           payload.settings,
         );
         mergeSettings(payload.settings);
-        startPopupFlow(false);
+        startPopupFlow();
       })
       .catch(function (err) {
         console.error(
@@ -371,7 +311,7 @@
           "[GeoFlow] Using default settings as fallback. The popup URLs may be incorrect.",
         );
         mergeSettings(null);
-        startPopupFlow(false);
+        startPopupFlow();
       });
   }
 
