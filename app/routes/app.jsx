@@ -10,7 +10,13 @@ import { NavLink, Outlet, useLoaderData, useLocation } from "react-router";
 import { authenticateAdmin } from "../services/shopifyAuth.server.js";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticateAdmin(request);
+  const auth = await authenticateAdmin(request);
+
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const { session } = auth;
 
   return { apiKey: process.env.SHOPIFY_API_KEY || "", shop: session.shop };
 };

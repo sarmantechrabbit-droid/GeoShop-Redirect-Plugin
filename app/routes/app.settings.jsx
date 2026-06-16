@@ -27,14 +27,26 @@ import {
 } from '../services/settings.server.js'
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticateAdmin(request)
+  const auth = await authenticateAdmin(request)
+
+  if (auth instanceof Response) {
+    return auth
+  }
+
+  const { session } = auth
   const settings = await getSettingsForShop(session.shop)
 
   return { settings, shop: session.shop }
 }
 
 export const action = async ({ request }) => {
-  const { session } = await authenticateAdmin(request)
+  const auth = await authenticateAdmin(request)
+
+  if (auth instanceof Response) {
+    return auth
+  }
+
+  const { session } = auth
   const formData = await request.formData()
   const intent = formData.get('intent')
 

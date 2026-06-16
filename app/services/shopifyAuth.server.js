@@ -22,14 +22,14 @@ function isShopifyAuthRedirect(url) {
   }
 }
 
-function throwTopLevelRedirect(request, location) {
+function topLevelRedirectResponse(request, location) {
   const headers = new Headers({
     'Content-Type': 'text/html;charset=utf-8',
   })
 
   addDocumentResponseHeaders(request, headers)
 
-  throw new Response(
+  return new Response(
     `
       <!doctype html>
       <html>
@@ -82,7 +82,7 @@ export async function authenticateAdmin(request) {
       const location = error.headers.get('Location')
 
       if (isShopifyAuthRedirect(location)) {
-        throwTopLevelRedirect(request, location)
+        return topLevelRedirectResponse(request, location)
       }
     }
 
@@ -108,7 +108,7 @@ export async function loginTopLevel(request) {
       const location = error.headers.get('Location')
 
       if (isShopifyAuthRedirect(location)) {
-        throwTopLevelRedirect(request, location)
+        return topLevelRedirectResponse(request, location)
       }
     }
 
