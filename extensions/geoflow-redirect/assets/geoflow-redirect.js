@@ -1,6 +1,25 @@
 (function () {
   var ROOT_ID = "geoflow-redirect-root";
-  var IP_API_URL = "https://ipapi.co/json/";
+  var IP_API_URLS = [
+    {
+      url: "https://ipapi.co/json/",
+      getCountryCode: function (data) {
+        return data.country_code;
+      },
+    },
+    {
+      url: "https://ipwho.is/",
+      getCountryCode: function (data) {
+        return data.country_code;
+      },
+    },
+    {
+      url: "https://ipinfo.io/json",
+      getCountryCode: function (data) {
+        return data.country;
+      },
+    },
+  ];
 
   // Detect Shopify Theme Editor mode
   var isThemeEditor = !!(window.Shopify && window.Shopify.designMode);
@@ -205,6 +224,45 @@
     document.body.appendChild(root);
   }
 
+  function normalizeDetectedCountry(countryCode) {
+    countryCode = String(countryCode || "").toUpperCase();
+
+    return countryCode === "IN" || countryCode === "AE" ? countryCode : "";
+  }
+
+  function detectCountryFromService(serviceIndex) {
+    var service = IP_API_URLS[serviceIndex];
+
+    if (!service) {
+      return Promise.resolve("OTHER");
+    }
+
+    return fetch(service.url, { headers: { Accept: "application/json" } })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Country detection failed.");
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        var countryCode = normalizeDetectedCountry(service.getCountryCode(data));
+
+        console.log(
+          "[GeoFlow] Detected country from " + service.url + ":",
+          countryCode || "OTHER",
+        );
+
+        return countryCode || "OTHER";
+      })
+      .catch(function (error) {
+        console.warn(
+          "[GeoFlow] Country detection failed from " + service.url + ":",
+          error.message || error,
+        );
+        return detectCountryFromService(serviceIndex + 1);
+      });
+  }
+
   function detectCountry() {
     // Skip IP detection in Theme Editor to avoid unnecessary API calls
     if (isThemeEditor) {
@@ -214,23 +272,7 @@
       return Promise.resolve("OTHER");
     }
 
-    return fetch(IP_API_URL, { headers: { Accept: "application/json" } })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("Country detection failed.");
-        }
-        return response.json();
-      })
-      .then(function (data) {
-        var countryCode = String(data.country_code || "").toUpperCase();
-        console.log("[GeoFlow] Detected country:", countryCode);
-        return countryCode === "IN" || countryCode === "AE"
-          ? countryCode
-          : "OTHER";
-      })
-      .catch(function () {
-        return "OTHER";
-      });
+    return detectCountryFromService(0);
   }
 
   function startPopupFlow() {
