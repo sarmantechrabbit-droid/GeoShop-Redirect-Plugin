@@ -6,25 +6,37 @@ import {
 } from "@shopify/polaris";
 import { HomeIcon, SettingsIcon, ViewIcon } from "@shopify/polaris-icons";
 import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
-import { NavLink, Outlet, useLoaderData, useLocation } from "react-router";
+import { boundary } from "@shopify/shopify-app-react-router/server";
+import {
+  NavLink,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useRouteError,
+} from "react-router";
 import { authenticateAdmin } from "../services/shopifyAuth.server.js";
 
 export const loader = async ({ request }) => {
-  const auth = await authenticateAdmin(request);
+  const { session } = await authenticateAdmin(request);
+  const url = new URL(request.url);
 
-  if (auth instanceof Response) {
-    return auth;
-  }
-
-  const { session } = auth;
-
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", shop: session.shop };
+  return {
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+    appSearch: url.search,
+    shop: session.shop,
+  };
 };
 
+export const headers = (headersArgs) => boundary.headers(headersArgs);
+
+export function ErrorBoundary() {
+  return boundary.error(useRouteError());
+}
+
 export default function AppLayout() {
-  const { apiKey, shop } = useLoaderData();
+  const { apiKey, appSearch } = useLoaderData();
   const location = useLocation();
-  const shopSearch = shop ? `?shop=${encodeURIComponent(shop)}` : "";
+  const routeSearch = location.search || appSearch || "";
 
   const navigationItems = [
     { label: "Dashboard", url: "/app", icon: HomeIcon },
@@ -42,7 +54,7 @@ export default function AppLayout() {
                 items={navigationItems.map((item) => ({
                   ...item,
                   selected: location.pathname === item.url,
-                  url: `${item.url}${shopSearch}`,
+                  url: `${item.url}${routeSearch}`,
                 }))}
               />
             </Navigation>
@@ -51,7 +63,7 @@ export default function AppLayout() {
           <Page>
             <div className="geoflow-admin-links">
               {navigationItems.map((item) => (
-                <NavLink key={item.url} to={`${item.url}${shopSearch}`}>
+                <NavLink key={item.url} to={`${item.url}${routeSearch}`}>
                   {item.label}
                 </NavLink>
               ))}

@@ -23,7 +23,7 @@ export default function Login() {
       <section className="geoflow-login-card">
         <h1>Login to GeoFlow Redirect</h1>
         <p>Enter your Shopify store domain to continue installing the app.</p>
-        <form method="post" className="geoflow-login-form">
+        <form method="post" target="_top" className="geoflow-login-form">
           <label htmlFor="shop">Shop domain</label>
           <input
             id="shop"

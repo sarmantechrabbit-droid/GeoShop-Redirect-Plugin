@@ -4,7 +4,7 @@ import {
   AppDistribution,
   shopifyApp,
 } from '@shopify/shopify-app-react-router/server'
-import { MemorySessionStorage } from '@shopify/shopify-app-session-storage-memory'
+import { FileSessionStorage } from './services/fileSessionStorage.server.js'
 
 function getAppUrl() {
   const configuredUrl =
@@ -23,7 +23,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(','),
   appUrl: getAppUrl(),
   authPathPrefix: '/auth',
-  sessionStorage: new MemorySessionStorage(),
+  sessionStorage: new FileSessionStorage(),
   distribution: AppDistribution.AppStore,
   future: {
     unstable_newEmbeddedAuthStrategy: true,

@@ -9,18 +9,12 @@ import {
   Page,
   Text,
 } from '@shopify/polaris'
-import { useLoaderData, useNavigate } from 'react-router'
+import { useLoaderData, useLocation, useNavigate } from 'react-router'
 import { authenticateAdmin } from '../services/shopifyAuth.server.js'
 import { getSettingsForShop } from '../services/settings.server.js'
 
 export const loader = async ({ request }) => {
-  const auth = await authenticateAdmin(request)
-
-  if (auth instanceof Response) {
-    return auth
-  }
-
-  const { session } = auth
+  const { session } = await authenticateAdmin(request)
   const settings = await getSettingsForShop(session.shop)
 
   return { shop: session.shop, settings }
@@ -28,8 +22,9 @@ export const loader = async ({ request }) => {
 
 export default function Dashboard() {
   const { shop, settings } = useLoaderData()
+  const location = useLocation()
   const navigate = useNavigate()
-  const shopSearch = shop ? `?shop=${encodeURIComponent(shop)}` : ''
+  const routeSearch = location.search
 
   return (
     <Page title="GeoFlow Redirect">
@@ -76,12 +71,12 @@ export default function Dashboard() {
 
               <InlineStack gap="300">
                 <Button
-                  onClick={() => navigate(`/app/settings${shopSearch}`)}
+                  onClick={() => navigate(`/app/settings${routeSearch}`)}
                   variant="primary"
                 >
                   Manage settings
                 </Button>
-                <Button onClick={() => navigate(`/app/preview${shopSearch}`)}>
+                <Button onClick={() => navigate(`/app/preview${routeSearch}`)}>
                   Preview popup
                 </Button>
               </InlineStack>

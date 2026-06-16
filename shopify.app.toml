@@ -1,8 +1,8 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "cbbffc22c9f45d478692f5b41403cede"
+client_id = "2f456b7574090f6ab579a706f9b95ff3"
 web_directories = [ "web" ]
-name = "GeoFlow Redirect"
+name = "GeoFlow Redirect1"
 
 application_url = "https://geoshop-redirect-plugin.onrender.com"
 embedded = true

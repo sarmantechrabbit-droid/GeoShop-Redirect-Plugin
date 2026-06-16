@@ -1,53 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { addDocumentResponseHeaders, authenticate, login } from '../shopify.server.js'
-
-const APP_BRIDGE_URL = 'https://cdn.shopify.com/shopifycloud/app-bridge.js'
-
-function isShopifyAuthRedirect(url) {
-  if (!url) {
-    return false
-  }
-
-  try {
-    const { hostname } = new URL(url)
-
-    return (
-      hostname === 'accounts.shopify.com' ||
-      hostname === 'admin.shopify.com' ||
-      hostname.endsWith('.myshopify.com')
-    )
-  } catch {
-    return false
-  }
-}
-
-function topLevelRedirectResponse(request, location) {
-  const headers = new Headers({
-    'Content-Type': 'text/html;charset=utf-8',
-  })
-
-  addDocumentResponseHeaders(request, headers)
-
-  return new Response(
-    `
-      <!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <script data-api-key="${process.env.SHOPIFY_API_KEY || ''}" src="${APP_BRIDGE_URL}"></script>
-          <script>
-            window.top.location.href = ${JSON.stringify(location)};
-          </script>
-        </head>
-        <body>
-          <a href="${location}" target="_top" rel="noreferrer">Redirecting to Shopify...</a>
-        </body>
-      </html>
-    `,
-    { headers },
-  )
-}
+import { authenticate, login } from '../shopify.server.js'
 
 export function getDevelopmentShop() {
   if (process.env.SHOPIFY_DEV_STORE_URL) {
@@ -75,43 +28,24 @@ export function getDevelopmentShop() {
 }
 
 export async function authenticateAdmin(request) {
-  try {
-    return await authenticate.admin(request)
-  } catch (error) {
-    if (error instanceof Response) {
-      const location = error.headers.get('Location')
+  const developmentShop = getDevelopmentShop()
+  const url = new URL(request.url)
 
-      if (isShopifyAuthRedirect(location)) {
-        return topLevelRedirectResponse(request, location)
-      }
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    developmentShop &&
+    !url.searchParams.get('shop')
+  ) {
+    return {
+      session: {
+        shop: developmentShop,
+      },
     }
-
-    const developmentShop = getDevelopmentShop()
-
-    if (process.env.NODE_ENV !== 'production' && developmentShop) {
-      return {
-        session: {
-          shop: developmentShop,
-        },
-      }
-    }
-
-    throw error
   }
+
+  return authenticate.admin(request)
 }
 
 export async function loginTopLevel(request) {
-  try {
-    return await login(request)
-  } catch (error) {
-    if (error instanceof Response) {
-      const location = error.headers.get('Location')
-
-      if (isShopifyAuthRedirect(location)) {
-        return topLevelRedirectResponse(request, location)
-      }
-    }
-
-    throw error
-  }
+  return login(request)
 }

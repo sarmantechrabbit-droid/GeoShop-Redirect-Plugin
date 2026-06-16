@@ -4,13 +4,7 @@ import { authenticateAdmin } from '../services/shopifyAuth.server.js'
 import { getSettingsForShop } from '../services/settings.server.js'
 
 export const loader = async ({ request }) => {
-  const auth = await authenticateAdmin(request)
-
-  if (auth instanceof Response) {
-    return auth
-  }
-
-  const { session } = auth
+  const { session } = await authenticateAdmin(request)
   const settings = await getSettingsForShop(session.shop)
 
   return { settings }

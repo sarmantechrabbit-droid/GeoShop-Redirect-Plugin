@@ -27,26 +27,15 @@ import {
 } from '../services/settings.server.js'
 
 export const loader = async ({ request }) => {
-  const auth = await authenticateAdmin(request)
-
-  if (auth instanceof Response) {
-    return auth
-  }
-
-  const { session } = auth
+  const { session } = await authenticateAdmin(request)
   const settings = await getSettingsForShop(session.shop)
+  const url = new URL(request.url)
 
-  return { settings, shop: session.shop }
+  return { appSearch: url.search, settings, shop: session.shop }
 }
 
 export const action = async ({ request }) => {
-  const auth = await authenticateAdmin(request)
-
-  if (auth instanceof Response) {
-    return auth
-  }
-
-  const { session } = auth
+  const { session } = await authenticateAdmin(request)
   const formData = await request.formData()
   const intent = formData.get('intent')
 
@@ -67,9 +56,7 @@ export default function Settings() {
   const actionData = useActionData()
   const navigation = useNavigation()
   const settings = actionData?.settings || loaderData.settings
-  const shopSearch = loaderData.shop
-    ? `?shop=${encodeURIComponent(loaderData.shop)}`
-    : ''
+  const shopSearch = loaderData.appSearch || ''
   const [formState, setFormState] = useState(settings)
   const isSubmitting = navigation.state === 'submitting'
 

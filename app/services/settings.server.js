@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { DEFAULT_SETTINGS } from '../constants/defaultSettings.js'
 
-const DATA_DIR = path.join(process.cwd(), 'app', 'data')
+const DATA_DIR = process.env.GEOSHOP_DATA_DIR || path.join(process.cwd(), 'app', 'data')
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json')
 
 function normalizeShop(shop) {
