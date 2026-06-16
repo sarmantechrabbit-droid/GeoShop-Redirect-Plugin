@@ -1,44 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { redirect } from 'react-router'
 import { addDocumentResponseHeaders, authenticate, login } from '../shopify.server.js'
 
 const APP_BRIDGE_URL = 'https://cdn.shopify.com/shopifycloud/app-bridge.js'
-
-function sanitizeShopDomain(shop) {
-  const normalizedShop = String(shop || '')
-    .trim()
-    .toLowerCase()
-    .replace(/^https?:\/\//, '')
-    .replace(/\/$/, '')
-
-  return /^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(normalizedShop)
-    ? normalizedShop
-    : ''
-}
-
-function getShopFromRequest(request) {
-  const url = new URL(request.url)
-  const shopFromUrl = sanitizeShopDomain(url.searchParams.get('shop'))
-
-  if (shopFromUrl) {
-    return shopFromUrl
-  }
-
-  const referer = request.headers.get('referer')
-
-  if (!referer) {
-    return ''
-  }
-
-  try {
-    const refererUrl = new URL(referer)
-
-    return sanitizeShopDomain(refererUrl.searchParams.get('shop'))
-  } catch {
-    return ''
-  }
-}
 
 function isShopifyAuthRedirect(url) {
   if (!url) {
@@ -73,11 +37,11 @@ function throwTopLevelRedirect(request, location) {
           <meta charset="utf-8" />
           <script data-api-key="${process.env.SHOPIFY_API_KEY || ''}" src="${APP_BRIDGE_URL}"></script>
           <script>
-            window.open(${JSON.stringify(location)}, "_top");
+            window.top.location.href = ${JSON.stringify(location)};
           </script>
         </head>
         <body>
-          Redirecting to Shopify...
+          <a href="${location}" target="_top" rel="noreferrer">Redirecting to Shopify...</a>
         </body>
       </html>
     `,
@@ -118,16 +82,6 @@ export async function authenticateAdmin(request) {
       const location = error.headers.get('Location')
 
       if (isShopifyAuthRedirect(location)) {
-        const shop = getShopFromRequest(request)
-
-        if (shop) {
-          return {
-            session: {
-              shop,
-            },
-          }
-        }
-
         throwTopLevelRedirect(request, location)
       }
     }
@@ -154,7 +108,7 @@ export async function loginTopLevel(request) {
       const location = error.headers.get('Location')
 
       if (isShopifyAuthRedirect(location)) {
-        return redirect(location)
+        throwTopLevelRedirect(request, location)
       }
     }
 
