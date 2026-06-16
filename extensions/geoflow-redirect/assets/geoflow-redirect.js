@@ -100,6 +100,11 @@
       return;
     }
 
+    if (url.replace(/\/$/, "") === window.location.href.replace(/\/$/, "")) {
+      console.log("[GeoFlow] Already on target URL, redirect skipped.");
+      return;
+    }
+
     window.top.location.href = url;
   }
 
@@ -107,13 +112,6 @@
     var existingRoot = document.getElementById(ROOT_ID);
     if (existingRoot) {
       existingRoot.remove();
-    }
-    document.removeEventListener("keydown", handleEscape);
-  }
-
-  function handleEscape(event) {
-    if (event.key === "Escape") {
-      removePopup();
     }
   }
 
@@ -141,29 +139,6 @@
     flag.setAttribute("aria-label", country.label + " flag");
     flag.setAttribute("role", "img");
     return flag;
-  }
-
-  function createDetectedContent(countryCode) {
-    var country = COUNTRIES[countryCode];
-    var wrapper = document.createElement("div");
-    wrapper.className = "gfr-detected";
-
-    var flag = createFlag(country, "gfr-flag-large");
-
-    var message = document.createElement("p");
-    message.className = "gfr-message";
-    message.textContent = settings[country.messageKey];
-
-    var button = createButton(settings[country.buttonKey], "gfr-button");
-    button.addEventListener("click", function () {
-      redirectToCountry(country.code);
-    });
-
-    wrapper.appendChild(flag);
-    wrapper.appendChild(message);
-    wrapper.appendChild(button);
-
-    return wrapper;
   }
 
   function createOption(countryCode) {
@@ -245,10 +220,6 @@
     modal.setAttribute("aria-modal", "true");
     modal.setAttribute("aria-labelledby", "gfr-title");
 
-    var closeButton = createButton("x", "gfr-close");
-    closeButton.setAttribute("aria-label", "Close country popup");
-    closeButton.addEventListener("click", removePopup);
-
     var kicker = document.createElement("p");
     kicker.className = "gfr-kicker";
     kicker.textContent = "GeoFlow Redirect";
@@ -256,30 +227,15 @@
     var title = document.createElement("h2");
     title.id = "gfr-title";
     title.className = "gfr-title";
-    title.textContent =
-      countryCode === "IN" || countryCode === "AE"
-        ? "Shop your regional store"
-        : settings.otherCountryMessage;
+    title.textContent = settings.otherCountryMessage;
 
-    modal.appendChild(closeButton);
     modal.appendChild(kicker);
     modal.appendChild(title);
-    modal.appendChild(
-      countryCode === "IN" || countryCode === "AE"
-        ? createDetectedContent(countryCode)
-        : createManualContent(),
-    );
-
-    overlay.addEventListener("mousedown", function (event) {
-      if (event.target === overlay) {
-        removePopup();
-      }
-    });
+    modal.appendChild(createManualContent());
 
     overlay.appendChild(modal);
     root.appendChild(overlay);
     document.body.appendChild(root);
-    document.addEventListener("keydown", handleEscape);
   }
 
   function renderFloatingButton() {
@@ -337,18 +293,26 @@
     // In Theme Editor, always show the popup for preview purposes
     if (isThemeEditor) {
       console.log("[GeoFlow] Theme editor: always showing popup for preview");
-      detectCountry().then(function (countryCode) {
-        renderPopup(countryCode);
-      });
+      renderPopup("OTHER");
       return;
     }
 
-    if (!forceOpen && settings.rememberSelection && getSavedCountry()) {
-      return;
+    if (!forceOpen && settings.rememberSelection) {
+      var savedCountry = getSavedCountry();
+
+      if (COUNTRIES[savedCountry]) {
+        redirectToCountry(savedCountry);
+        return;
+      }
     }
 
     detectCountry().then(function (countryCode) {
-      renderPopup(countryCode);
+      if (countryCode === "IN" || countryCode === "AE") {
+        redirectToCountry(countryCode);
+        return;
+      }
+
+      renderPopup("OTHER");
     });
   }
 

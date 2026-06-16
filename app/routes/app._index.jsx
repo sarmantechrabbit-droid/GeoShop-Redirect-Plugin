@@ -77,7 +77,7 @@ export default function Dashboard() {
               </InlineGrid>
 
               <InlineStack gap="300">
-                <Button
+                {/* <Button
                   onClick={() => navigate(`/app/settings${routeSearch}`)}
                   variant="primary"
                 >
@@ -85,7 +85,7 @@ export default function Dashboard() {
                 </Button>
                 <Button onClick={() => navigate(`/app/preview${routeSearch}`)}>
                   Preview popup
-                </Button>
+                </Button> */}
               </InlineStack>
             </BlockStack>
           </Card>

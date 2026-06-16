@@ -10,73 +10,76 @@ import {
   Page,
   Text,
   TextField,
-} from '@shopify/polaris'
-import { useEffect, useState } from 'react'
+} from "@shopify/polaris";
+import { useEffect, useState } from "react";
 import {
   Form as RouterForm,
   useActionData,
   useLoaderData,
   useNavigation,
-} from 'react-router'
+} from "react-router";
 import {
   authenticateAdmin,
   getEmbeddedAppSearch,
-} from '../services/shopifyAuth.server.js'
+} from "../services/shopifyAuth.server.js";
 import {
   getSettingsForShop,
   parseSettingsForm,
   resetSettingsForShop,
   saveSettingsForShop,
-} from '../services/settings.server.js'
+} from "../services/settings.server.js";
 
 export const loader = async ({ request }) => {
-  const { session } = await authenticateAdmin(request)
-  const settings = await getSettingsForShop(session.shop)
+  const { session } = await authenticateAdmin(request);
+  const settings = await getSettingsForShop(session.shop);
 
   return {
     appSearch: getEmbeddedAppSearch(request, session.shop),
     settings,
     shop: session.shop,
-  }
-}
+  };
+};
 
 export const action = async ({ request }) => {
-  const { session } = await authenticateAdmin(request)
-  const formData = await request.formData()
-  const intent = formData.get('intent')
+  const { session } = await authenticateAdmin(request);
+  const formData = await request.formData();
+  const intent = formData.get("intent");
 
   try {
     const settings =
-      intent === 'reset'
+      intent === "reset"
         ? await resetSettingsForShop(session.shop)
-        : await saveSettingsForShop(session.shop, parseSettingsForm(formData))
+        : await saveSettingsForShop(session.shop, parseSettingsForm(formData));
 
-    return { settings, success: intent === 'reset' ? 'Defaults restored.' : 'Settings saved.' }
+    return {
+      settings,
+      success: intent === "reset" ? "Defaults restored." : "Settings saved.",
+    };
   } catch (error) {
-    return { error: error.message }
+    return { error: error.message };
   }
-}
+};
 
 export default function Settings() {
-  const loaderData = useLoaderData()
-  const actionData = useActionData()
-  const navigation = useNavigation()
-  const settings = actionData?.settings || loaderData.settings
-  const shopSearch = loaderData.appSearch || ''
-  const [formState, setFormState] = useState(settings)
-  const isSubmitting = navigation.state === 'submitting'
+  const loaderData = useLoaderData();
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const settings = actionData?.settings || loaderData.settings;
+  const shopSearch = loaderData.appSearch || "";
+  const [formState, setFormState] = useState(settings);
+  const isSubmitting = navigation.state === "submitting";
 
   useEffect(() => {
-    setFormState(settings)
-  }, [settings])
+    setFormState(settings);
+  }, [settings]);
 
   function updateField(field) {
     return (value) => {
       setFormState((current) => ({
         ...current,
         [field]: value,
-      }))
-    }
+      }));
+    };
   }
 
   function updateCheckbox(field) {
@@ -84,8 +87,8 @@ export default function Settings() {
       setFormState((current) => ({
         ...current,
         [field]: checked,
-      }))
-    }
+      }));
+    };
   }
 
   return (
@@ -109,17 +112,25 @@ export default function Settings() {
                   <Text as="h2" variant="headingMd">
                     Popup controls
                   </Text>
-                  <input type="hidden" name="popupEnabled" value={formState.popupEnabled ? 'true' : 'false'} />
+                  <input
+                    type="hidden"
+                    name="popupEnabled"
+                    value={formState.popupEnabled ? "true" : "false"}
+                  />
                   <Checkbox
                     label="Enable popup"
                     checked={formState.popupEnabled}
-                    onChange={updateCheckbox('popupEnabled')}
+                    onChange={updateCheckbox("popupEnabled")}
                   />
-                  <input type="hidden" name="rememberSelection" value={formState.rememberSelection ? 'true' : 'false'} />
+                  <input
+                    type="hidden"
+                    name="rememberSelection"
+                    value={formState.rememberSelection ? "true" : "false"}
+                  />
                   <Checkbox
                     label="Remember customer selection in localStorage"
                     checked={formState.rememberSelection}
-                    onChange={updateCheckbox('rememberSelection')}
+                    onChange={updateCheckbox("rememberSelection")}
                     helpText="When enabled, returning customers will not see the popup again until they click Change Country."
                   />
                 </BlockStack>
@@ -136,7 +147,7 @@ export default function Settings() {
                       name="indiaUrl"
                       type="url"
                       value={formState.indiaUrl}
-                      onChange={updateField('indiaUrl')}
+                      onChange={updateField("indiaUrl")}
                       autoComplete="off"
                     />
                     <TextField
@@ -144,7 +155,7 @@ export default function Settings() {
                       name="uaeUrl"
                       type="url"
                       value={formState.uaeUrl}
-                      onChange={updateField('uaeUrl')}
+                      onChange={updateField("uaeUrl")}
                       autoComplete="off"
                     />
                   </FormLayout>
@@ -161,7 +172,7 @@ export default function Settings() {
                       label="India popup message"
                       name="indiaMessage"
                       value={formState.indiaMessage}
-                      onChange={updateField('indiaMessage')}
+                      onChange={updateField("indiaMessage")}
                       multiline={3}
                       autoComplete="off"
                     />
@@ -169,7 +180,7 @@ export default function Settings() {
                       label="UAE popup message"
                       name="uaeMessage"
                       value={formState.uaeMessage}
-                      onChange={updateField('uaeMessage')}
+                      onChange={updateField("uaeMessage")}
                       multiline={3}
                       autoComplete="off"
                     />
@@ -177,7 +188,7 @@ export default function Settings() {
                       label="Other country popup message"
                       name="otherCountryMessage"
                       value={formState.otherCountryMessage}
-                      onChange={updateField('otherCountryMessage')}
+                      onChange={updateField("otherCountryMessage")}
                       multiline={2}
                       autoComplete="off"
                     />
@@ -195,21 +206,21 @@ export default function Settings() {
                       label="India button text"
                       name="indiaButtonText"
                       value={formState.indiaButtonText}
-                      onChange={updateField('indiaButtonText')}
+                      onChange={updateField("indiaButtonText")}
                       autoComplete="off"
                     />
                     <TextField
                       label="UAE button text"
                       name="uaeButtonText"
                       value={formState.uaeButtonText}
-                      onChange={updateField('uaeButtonText')}
+                      onChange={updateField("uaeButtonText")}
                       autoComplete="off"
                     />
                     <TextField
                       label="Manual selection button text"
                       name="shopNowButtonText"
                       value={formState.shopNowButtonText}
-                      onChange={updateField('shopNowButtonText')}
+                      onChange={updateField("shopNowButtonText")}
                       autoComplete="off"
                     />
                   </FormLayout>
@@ -226,7 +237,12 @@ export default function Settings() {
                 >
                   Save settings
                 </Button>
-                <Button submit name="intent" value="reset" disabled={isSubmitting}>
+                <Button
+                  submit
+                  name="intent"
+                  value="reset"
+                  disabled={isSubmitting}
+                >
                   Reset to default
                 </Button>
               </ButtonGroup>
@@ -235,5 +251,5 @@ export default function Settings() {
         </Layout>
       </RouterForm>
     </Page>
-  )
+  );
 }
