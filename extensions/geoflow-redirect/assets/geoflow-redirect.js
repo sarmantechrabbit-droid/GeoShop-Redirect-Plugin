@@ -1,4 +1,5 @@
 (function () {
+  var SCRIPT_VERSION = "2026-06-16-country-auto-redirect-v2";
   var ROOT_ID = "geoflow-redirect-root";
   var IP_API_URLS = [
     {
@@ -60,7 +61,7 @@
 
   var settings = DEFAULT_SETTINGS;
 
-  console.log("[GeoFlow] Redirect loaded");
+  console.log("[GeoFlow] Redirect loaded:", SCRIPT_VERSION);
   console.log("[GeoFlow] Theme editor mode:", isThemeEditor);
 
   function mergeSettings(remoteSettings) {

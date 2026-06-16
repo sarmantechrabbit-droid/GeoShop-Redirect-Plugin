@@ -12,6 +12,7 @@
     "dev:clean": "shopify app dev clean",
     "app:dev": "react-router dev --host 0.0.0.0 --port 3000 --strictPort",
     "build": "react-router build",
+    "deploy:shopify": "shopify app deploy",
     "start": "react-router-serve ./build/server/index.js",
     "lint": "eslint .",
     "shopify": "shopify"
