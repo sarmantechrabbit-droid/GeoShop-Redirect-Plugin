@@ -10,21 +10,28 @@ import {
   Text,
 } from '@shopify/polaris'
 import { useLoaderData, useLocation, useNavigate } from 'react-router'
-import { authenticateAdmin } from '../services/shopifyAuth.server.js'
+import {
+  authenticateAdmin,
+  getEmbeddedAppSearch,
+} from '../services/shopifyAuth.server.js'
 import { getSettingsForShop } from '../services/settings.server.js'
 
 export const loader = async ({ request }) => {
   const { session } = await authenticateAdmin(request)
   const settings = await getSettingsForShop(session.shop)
 
-  return { shop: session.shop, settings }
+  return {
+    appSearch: getEmbeddedAppSearch(request, session.shop),
+    shop: session.shop,
+    settings,
+  }
 }
 
 export default function Dashboard() {
-  const { shop, settings } = useLoaderData()
+  const { appSearch, shop, settings } = useLoaderData()
   const location = useLocation()
   const navigate = useNavigate()
-  const routeSearch = location.search
+  const routeSearch = location.search || appSearch
 
   return (
     <Page title="GeoFlow Redirect">

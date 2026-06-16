@@ -18,7 +18,10 @@ import {
   useLoaderData,
   useNavigation,
 } from 'react-router'
-import { authenticateAdmin } from '../services/shopifyAuth.server.js'
+import {
+  authenticateAdmin,
+  getEmbeddedAppSearch,
+} from '../services/shopifyAuth.server.js'
 import {
   getSettingsForShop,
   parseSettingsForm,
@@ -29,9 +32,12 @@ import {
 export const loader = async ({ request }) => {
   const { session } = await authenticateAdmin(request)
   const settings = await getSettingsForShop(session.shop)
-  const url = new URL(request.url)
 
-  return { appSearch: url.search, settings, shop: session.shop }
+  return {
+    appSearch: getEmbeddedAppSearch(request, session.shop),
+    settings,
+    shop: session.shop,
+  }
 }
 
 export const action = async ({ request }) => {

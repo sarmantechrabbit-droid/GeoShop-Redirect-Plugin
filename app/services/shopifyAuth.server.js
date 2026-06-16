@@ -27,6 +27,28 @@ export function getDevelopmentShop() {
   }
 }
 
+export function getEmbeddedAppSearch(request, shop) {
+  const url = new URL(request.url)
+  const search = new URLSearchParams()
+  const shopParam = shop || url.searchParams.get('shop')
+
+  if (shopParam) {
+    search.set('shop', shopParam)
+  }
+
+  for (const key of ['host', 'embedded', 'locale']) {
+    const value = url.searchParams.get(key)
+
+    if (value) {
+      search.set(key, value)
+    }
+  }
+
+  const query = search.toString()
+
+  return query ? `?${query}` : ''
+}
+
 export async function authenticateAdmin(request) {
   const developmentShop = getDevelopmentShop()
   const url = new URL(request.url)

@@ -8,21 +8,23 @@ import { HomeIcon, SettingsIcon, ViewIcon } from "@shopify/polaris-icons";
 import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import {
-  NavLink,
   Outlet,
   useLoaderData,
   useLocation,
+  useNavigate,
   useRouteError,
 } from "react-router";
-import { authenticateAdmin } from "../services/shopifyAuth.server.js";
+import {
+  authenticateAdmin,
+  getEmbeddedAppSearch,
+} from "../services/shopifyAuth.server.js";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticateAdmin(request);
-  const url = new URL(request.url);
 
   return {
     apiKey: process.env.SHOPIFY_API_KEY || "",
-    appSearch: url.search,
+    appSearch: getEmbeddedAppSearch(request, session.shop),
     shop: session.shop,
   };
 };
@@ -36,6 +38,7 @@ export function ErrorBoundary() {
 export default function AppLayout() {
   const { apiKey, appSearch } = useLoaderData();
   const location = useLocation();
+  const navigate = useNavigate();
   const routeSearch = location.search || appSearch || "";
 
   const navigationItems = [
@@ -55,19 +58,13 @@ export default function AppLayout() {
                   ...item,
                   selected: location.pathname === item.url,
                   url: `${item.url}${routeSearch}`,
+                  onClick: () => navigate(`${item.url}${routeSearch}`),
                 }))}
               />
             </Navigation>
           }
         >
           <Page>
-            <div className="geoflow-admin-links">
-              {navigationItems.map((item) => (
-                <NavLink key={item.url} to={`${item.url}${routeSearch}`}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
             <Outlet />
           </Page>
         </Frame>
